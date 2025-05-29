@@ -1,0 +1,9 @@
+﻿Things I'd like to do to improve this:
+ - Need to store the API key something more secure
+ - Logging
+ - Move most of the logic out of the controller
+ - Add a reference date so you can go back in the past
+ - Add persistent storage so you can save data and not have to make requests to the API all the time
+ - Create a frontend to visualize the data
+ - Create a more detailed endpoint which gives you more information about the workouts that contribute to all of the sets
+ 

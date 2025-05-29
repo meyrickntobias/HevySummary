@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HevySummary", "HevySummary\HevySummary.csproj", "{1A914437-1FD8-4A3C-882F-4AFBD3A24674}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HevySummary.IntegrationTest", "HevySummary.IntegrationTest\HevySummary.IntegrationTest.csproj", "{C92CDCE2-A906-483E-936B-4DC192D02EBE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HevySummary.UnitTest", "HevySummary.UnitTest\HevySummary.UnitTest.csproj", "{D8ED2810-6333-4644-91E8-08AAE258A985}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1A914437-1FD8-4A3C-882F-4AFBD3A24674}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A914437-1FD8-4A3C-882F-4AFBD3A24674}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A914437-1FD8-4A3C-882F-4AFBD3A24674}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A914437-1FD8-4A3C-882F-4AFBD3A24674}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C92CDCE2-A906-483E-936B-4DC192D02EBE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C92CDCE2-A906-483E-936B-4DC192D02EBE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C92CDCE2-A906-483E-936B-4DC192D02EBE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C92CDCE2-A906-483E-936B-4DC192D02EBE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D8ED2810-6333-4644-91E8-08AAE258A985}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D8ED2810-6333-4644-91E8-08AAE258A985}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D8ED2810-6333-4644-91E8-08AAE258A985}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D8ED2810-6333-4644-91E8-08AAE258A985}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
