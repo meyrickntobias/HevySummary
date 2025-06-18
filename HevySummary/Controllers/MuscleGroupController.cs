@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using HevySummary.DTOs;
 using HevySummary.Helpers;
 using HevySummary.Models;
@@ -8,7 +9,7 @@ namespace HevySummary.Controllers;
 
 [ApiController]
 [Route("")]
-public class MuscleGroupController(IHevyApiService hevyApiService)
+public class MuscleGroupController(IHevyApiService hevyApiService, IMuscleGroupService muscleGroupService, ILogger<MuscleGroupController> logger)
 {
     /// <summary>
     /// Gets a summary of the sets performed for each muscle group over the last N weeks.
@@ -18,8 +19,9 @@ public class MuscleGroupController(IHevyApiService hevyApiService)
     /// sets plus secondary sets multiplied by 0.5. Also shows primary and secondary sets. Warmup sets
     /// are ignored. </returns>
     [HttpGet("/muscle-groups")]
-    public async Task<List<SetVolumeSummary>> MuscleGroupSets(int weeks = 4)
+    public async Task<List<SetVolumeSummary>> MuscleGroupSets(int weeks = 4, bool disableCache = false)
     {
+        var stopwatch = Stopwatch.StartNew();
         var dateRanges = new DateHelper(TimeProvider.System).GetWeeksUpToCurrentWeek(weeks);
         var earliestWorkoutDate = dateRanges[^1].StartDate;
         var workouts = await hevyApiService.GetWorkoutsSince(earliestWorkoutDate);
@@ -30,7 +32,7 @@ public class MuscleGroupController(IHevyApiService hevyApiService)
             .Select(e => e.ExerciseTemplateId)
             .ToList();
         
-        var exerciseTemplates = await hevyApiService.GetExerciseTemplates(exerciseTemplateIds);
+        var exerciseTemplates = await muscleGroupService.GetExerciseTemplates(exerciseTemplateIds, disableCache);
         var exerciseTemplatesDict = exerciseTemplates
             .ToDictionary(et => et.Id, et => et);
         
@@ -46,15 +48,20 @@ public class MuscleGroupController(IHevyApiService hevyApiService)
                 .Select(kvp => new MuscleGroupSets(kvp.Key, kvp.Value.Item1, kvp.Value.Item2))
                 .OrderByDescending(m => m.CalculatedSets)
                 .ToList();
+
+            var dateRange = new DateRange(week.StartDate, week.EndDate);
             
             var muscleGroupWeek = new SetVolumeSummary(
                 week.StartDate,
                 week.EndDate,
+                workoutsInWeeks[dateRange].Count,
                 muscleSetsInWeek);
             
             weeklySetVolume.Add(muscleGroupWeek);
         }
         
+        stopwatch.Stop();
+        logger.LogInformation($"Duration of request: {stopwatch.Elapsed}");
         return weeklySetVolume;
     }
 
