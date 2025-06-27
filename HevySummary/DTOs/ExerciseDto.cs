@@ -4,12 +4,12 @@ namespace HevySummary.DTOs;
 
 public class ExerciseDto
 {
-    public string Title { get; set; }
+    public required string Title { get; set; }
     
     [JsonProperty("exercise_template_id")]
-    public string ExerciseTemplateId { get; set; }
-    
-    public List<ExerciseSetDto> Sets { get; set; }
+    public required string ExerciseTemplateId { get; set; }
+
+    public List<ExerciseSetDto> Sets { get; set; } = [];
 }
 
 public class ExerciseDtoEqualityComparer : IEqualityComparer<ExerciseDto>

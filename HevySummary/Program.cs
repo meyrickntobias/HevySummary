@@ -11,20 +11,7 @@ public class Program
         DotEnv.Load();
         var builder = WebApplication.CreateBuilder(args);
         
-        builder.Services.AddControllers();
-        
-        builder.Services.AddLogging();
-
-        builder.Services.AddHttpClient();
-        
-        builder.Services.AddTransient<IMuscleGroupService, MuscleGroupService>();
-
-        builder.Services.AddTransient<IHevyApiService, HevyApiService>();
-        
-        builder.Services.AddSingleton<IConnectionMultiplexer>(
-            ConnectionMultiplexer.Connect(builder.Configuration.GetConnectionString("Redis") ?? throw new Exception("Redis connection string isn't configured.")));
-
-        builder.Services.AddSingleton<ICacheService, RedisCacheService>();
+        ConfigureServices(builder.Services, builder.Configuration);
         
         var app = builder.Build();
 
@@ -38,8 +25,27 @@ public class Program
                 .AllowAnyHeader();
         });
 
-        // app.UseAuthorization();
-
         app.Run();
+    }
+
+    private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddControllers();
+        
+        services.AddLogging();
+
+        services.AddHttpClient();
+        
+        services.AddTransient<IMuscleGroupService, MuscleGroupService>();
+
+        services.AddTransient<IHevyApiService, HevyApiService>();
+        
+        services.AddSingleton<IConnectionMultiplexer>(
+            ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis") 
+            ?? throw new Exception("Redis connection string isn't configured.")));
+
+        services.AddSingleton<ICacheService, RedisCacheService>();
+
+        services.AddTransient<TimeProvider>(_ => TimeProvider.System);
     }
 }

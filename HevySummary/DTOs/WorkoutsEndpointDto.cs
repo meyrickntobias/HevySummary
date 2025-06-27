@@ -8,6 +8,6 @@ public class WorkoutsEndpointDto
     
     [JsonProperty("page_count")]
     public int PageCount { get; set; }
-    
-    public List<WorkoutDto> Workouts { get; set; }
+
+    public List<WorkoutDto> Workouts { get; set; } = [];
 }

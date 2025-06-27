@@ -9,20 +9,27 @@ namespace HevySummary.Controllers;
 
 [ApiController]
 [Route("")]
-public class MuscleGroupController(IHevyApiService hevyApiService, IMuscleGroupService muscleGroupService, ILogger<MuscleGroupController> logger)
+public class MuscleGroupController(
+    IHevyApiService hevyApiService, 
+    IMuscleGroupService muscleGroupService, 
+    ILogger<MuscleGroupController> logger,
+    TimeProvider timeProvider)
 {
+    private readonly DateHelper _dateHelper = new(timeProvider);
+    
     /// <summary>
     /// Gets a summary of the sets performed for each muscle group over the last N weeks.
     /// </summary>
     /// <param name="weeks">The number of weeks to return. The default value is 4.</param>
+    /// <param name="disableCache">When set to true, values aren't cached.</param>
     /// <returns>Each date range alongside all the muscle groups, ordered by calculated sets (primary
-    /// sets plus secondary sets multiplied by 0.5. Also shows primary and secondary sets. Warmup sets
+    /// sets plus secondary sets multiplied by 0.5). Also shows primary and secondary sets. Warmup sets
     /// are ignored. </returns>
     [HttpGet("/muscle-groups")]
     public async Task<List<SetVolumeSummary>> MuscleGroupSets(int weeks = 4, bool disableCache = false)
     {
         var stopwatch = Stopwatch.StartNew();
-        var dateRanges = new DateHelper(TimeProvider.System).GetWeeksUpToCurrentWeek(weeks);
+        var dateRanges = _dateHelper.GetWeeksUpToCurrentWeek(weeks);
         var earliestWorkoutDate = dateRanges[^1].StartDate;
         var workouts = await hevyApiService.GetWorkoutsSince(earliestWorkoutDate);
         
@@ -61,7 +68,8 @@ public class MuscleGroupController(IHevyApiService hevyApiService, IMuscleGroupS
         }
         
         stopwatch.Stop();
-        logger.LogInformation($"Duration of request: {stopwatch.Elapsed}");
+        var formattedTime = stopwatch.Elapsed.ToString(@"ss\.fff");
+        logger.LogInformation($"Duration of request: {formattedTime} secs");
         return weeklySetVolume;
     }
 

@@ -2,7 +2,7 @@ namespace HevySummary.Services;
 
 public interface ICacheService
 {
-    public Task<string?> GetCacheValue(string key);
+    public Task<T?> GetCacheValueAsync<T>(string key);
     
-    public Task SetCacheValue(string key, string value);
+    public Task<T> SetCacheValueAsync<T>(string key, T value, TimeSpan? absoluteExpirationRelativeToNow = null);
 }

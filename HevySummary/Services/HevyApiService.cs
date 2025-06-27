@@ -7,7 +7,7 @@ public class HevyApiService : IHevyApiService
 {
     private readonly HttpClient _httpClient;
 
-    public HevyApiService(IHttpClientFactory httpClientFactory, IConfiguration configuration, ICacheService cacheService)
+    public HevyApiService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
     {
         _httpClient = httpClientFactory.CreateClient();
         _httpClient.BaseAddress = new Uri("https://api.hevyapp.com");

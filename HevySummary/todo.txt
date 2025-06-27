@@ -7,3 +7,7 @@
  - Create a frontend to visualize the data
  - Create a more detailed endpoint which gives you more information about the workouts that contribute to all of the sets
  
+ - Create dockerfile for Redis cache
+ - Create dockerfile for the API
+ - Create build script for building the whole thing
+

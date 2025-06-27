@@ -1,5 +1,4 @@
 using HevySummary.DTOs;
-using Newtonsoft.Json;
 
 namespace HevySummary.Services;
 
@@ -16,46 +15,42 @@ public class MuscleGroupService : IMuscleGroupService
 
     public async Task<List<ExerciseTemplateDto>> GetExerciseTemplates(List<string> exerciseIds, bool disableCache = false)
     {
-        // Lookup exercise templates in the cache
-        List<ExerciseTemplateDto> exerciseTemplates = [];
-        List<ExerciseTemplateDto> deserializedCachedTemplates = [];
-
         if (disableCache)
         {
             return await _hevyApiService.GetExerciseTemplates(exerciseIds);
         }
         
-        var cachedExerciseTemplates = await _cacheService.GetCacheValue("ExerciseTemplates");
+        List<ExerciseTemplateDto> exerciseTemplates = [];
 
-        if (!string.IsNullOrEmpty(cachedExerciseTemplates))
+        var cachedExerciseTemplates =
+            await _cacheService.GetCacheValueAsync<List<ExerciseTemplateDto>>("ExerciseTemplates") ?? [];
+        var cachedIds = cachedExerciseTemplates.Select(t => t.Id).ToList();
+        
+        // Maybe use set instead?
+        if (cachedIds.SequenceEqual(exerciseIds))
         {
-            deserializedCachedTemplates = JsonConvert.DeserializeObject<List<ExerciseTemplateDto>>(cachedExerciseTemplates) ?? [];
-            var cachedIds = deserializedCachedTemplates.Select(t => t.Id).ToList();
-            // Maybe use set instead?
-            if (cachedIds.SequenceEqual(exerciseIds))
-            {
-                return deserializedCachedTemplates;
-            }
-            
-            exerciseTemplates.AddRange(deserializedCachedTemplates);
+            return cachedExerciseTemplates;
         }
         
+        exerciseTemplates.AddRange(cachedExerciseTemplates);
         var nonCachedTemplates = await _hevyApiService.GetExerciseTemplates(exerciseIds);
         exerciseTemplates.AddRange(nonCachedTemplates);
 
-        if (nonCachedTemplates.Any())
+        if (nonCachedTemplates.Count != 0)
         {
-            await UpdateExerciseTemplatesCache(deserializedCachedTemplates, nonCachedTemplates);
+            await UpdateExerciseTemplatesCache(cachedExerciseTemplates, nonCachedTemplates);
         }
         
         return exerciseTemplates;
     }
 
-    private async Task UpdateExerciseTemplatesCache(List<ExerciseTemplateDto> alreadyCached, List<ExerciseTemplateDto> exerciseTemplatesToAdd)
+    private async Task UpdateExerciseTemplatesCache(
+        List<ExerciseTemplateDto> exerciseTemplatesAlreadyCached, 
+        List<ExerciseTemplateDto> exerciseTemplatesNotCached)
     {
-        var allTemplates = new List<ExerciseTemplateDto>();
-        allTemplates.AddRange(exerciseTemplatesToAdd);
-        allTemplates.AddRange(alreadyCached);
-        await _cacheService.SetCacheValue("ExerciseTemplates", JsonConvert.SerializeObject(allTemplates));
+        var allExerciseTemplates = new List<ExerciseTemplateDto>();
+        allExerciseTemplates.AddRange(exerciseTemplatesNotCached);
+        allExerciseTemplates.AddRange(exerciseTemplatesAlreadyCached);
+        await _cacheService.SetCacheValueAsync("ExerciseTemplates", allExerciseTemplates);
     }
 }
