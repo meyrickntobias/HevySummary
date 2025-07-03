@@ -1,14 +1,9 @@
-using Newtonsoft.Json;
-
 namespace HevySummary.DTOs;
 
 public class ExerciseDto
 {
     public required string Title { get; set; }
-    
-    [JsonProperty("exercise_template_id")]
     public required string ExerciseTemplateId { get; set; }
-
     public List<ExerciseSetDto> Sets { get; set; } = [];
 }
 

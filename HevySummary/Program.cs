@@ -38,7 +38,7 @@ public class Program
         
         services.AddTransient<IMuscleGroupService, MuscleGroupService>();
 
-        services.AddTransient<IHevyApiService, HevyApiService>();
+        services.AddTransient<IWorkoutApiService, HevyApiService>();
         
         services.AddSingleton<IConnectionMultiplexer>(
             ConnectionMultiplexer.Connect(configuration.GetConnectionString("Redis") 

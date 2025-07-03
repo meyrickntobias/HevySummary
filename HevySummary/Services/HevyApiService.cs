@@ -1,11 +1,13 @@
+using System.Text.Json;
 using HevySummary.DTOs;
-using Newtonsoft.Json;
+using HevySummary.Models;
 
 namespace HevySummary.Services;
 
-public class HevyApiService : IHevyApiService
+public class HevyApiService : IWorkoutApiService
 {
     private readonly HttpClient _httpClient;
+    private readonly JsonSerializerOptions _serializerOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
     public HevyApiService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
     {
@@ -33,18 +35,16 @@ public class HevyApiService : IHevyApiService
         
         while (earliestFetchedWorkoutDate > earliestRequestedWorkoutDate)
         {
-            var request = new HttpRequestMessage(HttpMethod.Get, $"/v1/workouts?page={page}&pageSize=10");
-            var response = await _httpClient.SendAsync(request);
-            var workoutsResponse =
-                JsonConvert.DeserializeObject<WorkoutsEndpointDto>(await response.Content.ReadAsStringAsync()) ?? new WorkoutsEndpointDto();
+            var workoutsResponse = await _httpClient.GetFromJsonAsync<WorkoutsEndpointDto>(
+                $"/v1/workouts?page={page}&pageSize=10", _serializerOptions) ?? new WorkoutsEndpointDto();
             
             if (workoutsResponse.Workouts.Count == 0)
             {
                 return workouts;
             }
             
-            workouts.AddRange(workoutsResponse.Workouts);
-            earliestFetchedWorkoutDate = DateOnly.FromDateTime(workoutsResponse.Workouts[^1].StartTime);
+            workouts.AddRange(workoutsResponse?.Workouts ?? []);
+            earliestFetchedWorkoutDate = DateOnly.FromDateTime(workoutsResponse!.Workouts[^1].StartTime);
             page++;
         }
         
@@ -59,23 +59,23 @@ public class HevyApiService : IHevyApiService
     /// </summary>
     /// <param name="exerciseIds">The exercise templates to fetch</param>
     /// <returns>The list of exercise templates</returns>
-    public async Task<List<ExerciseTemplateDto>> GetExerciseTemplates(List<string> exerciseIds)
+    public async Task<List<ExerciseTemplateDto>> GetExerciseTemplates(IEnumerable<string> exerciseIds)
     {
-        List<Task<ExerciseTemplateDto?>> tasks = [];
-        tasks.AddRange(exerciseIds.Select(exerciseId => new HttpRequestMessage(HttpMethod.Get, $"/v1/exercise_templates/{exerciseId}"))
-            .Select(request => _httpClient.SendAsync(request)
-                .ContinueWith(responseTask =>
-                {
-                    var response = responseTask.Result;
-                    var content = response.Content.ReadAsStringAsync().Result;
-                    return JsonConvert.DeserializeObject<ExerciseTemplateDto>(content);
-                })));
-
-        var exerciseTemplates = await Task.WhenAll(tasks);
+        var exerciseTemplates = await Task.WhenAll(exerciseIds.Select(exerciseId => 
+            _httpClient.GetFromJsonAsync<ExerciseTemplateDto>($"/v1/exercise_templates/{exerciseId}", _serializerOptions)));
 
         return exerciseTemplates
             .Where(et => et != null)
             .Select(et => et!)
             .ToList();
     }
+
+    public async Task<List<WorkoutEvent>> GetWorkoutEventsSince(DateTime since)
+    {
+        var response = await _httpClient.GetFromJsonAsync<WorkoutEventResponse>(
+            $"/v1/workouts/events?page=1&pageSize=10&since={since:yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'}", _serializerOptions);
+
+        return response?.Events ?? [];
+    }
 }
+

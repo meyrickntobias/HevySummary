@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Diagnostics;
 using HevySummary.DTOs;
 using HevySummary.Helpers;
@@ -10,7 +11,6 @@ namespace HevySummary.Controllers;
 [ApiController]
 [Route("")]
 public class MuscleGroupController(
-    IHevyApiService hevyApiService, 
     IMuscleGroupService muscleGroupService, 
     ILogger<MuscleGroupController> logger,
     TimeProvider timeProvider)
@@ -31,13 +31,13 @@ public class MuscleGroupController(
         var stopwatch = Stopwatch.StartNew();
         var dateRanges = _dateHelper.GetWeeksUpToCurrentWeek(weeks);
         var earliestWorkoutDate = dateRanges[^1].StartDate;
-        var workouts = await hevyApiService.GetWorkoutsSince(earliestWorkoutDate);
+        var workouts = await muscleGroupService.GetWorkoutsSince(earliestWorkoutDate, disableCache);
         
         var exerciseTemplateIds = workouts
             .SelectMany(w => w.Exercises)
             .Distinct(new ExerciseDtoEqualityComparer())
             .Select(e => e.ExerciseTemplateId)
-            .ToList();
+            .ToImmutableHashSet();
         
         var exerciseTemplates = await muscleGroupService.GetExerciseTemplates(exerciseTemplateIds, disableCache);
         var exerciseTemplatesDict = exerciseTemplates
@@ -51,8 +51,8 @@ public class MuscleGroupController(
         foreach (var week in exercisesGroupedInWeek)
         {
             // All the exercises in the week get
-            var muscleSetsInWeek = SetsPerMuscle(week.Exercises)
-                .Select(kvp => new MuscleGroupSets(kvp.Key, kvp.Value.Item1, kvp.Value.Item2))
+            var muscleSetsInWeek = CalculateSetsPerMuscle(week.Exercises)
+                .Select(kvp => kvp.Value)
                 .OrderByDescending(m => m.CalculatedSets)
                 .ToList();
 
@@ -131,10 +131,9 @@ public class MuscleGroupController(
         return weeklyExerciseGroups.ToList();
     }
 
-    // TODO: Refactor away from tuples as they cause confusion
-    private Dictionary<string, (decimal, decimal)> SetsPerMuscle(List<Exercise> exercises)
+    private Dictionary<string, MuscleGroupSets> CalculateSetsPerMuscle(List<Exercise> exercises)
     {
-        var setsPerMuscle = new Dictionary<string, (decimal, decimal)>();
+        var setsPerMuscle = new System.Collections.Generic.Dictionary<string, MuscleGroupSets>();
         
         foreach (var exercise in exercises)
         {
@@ -143,16 +142,20 @@ public class MuscleGroupController(
             
             var sets = exercise.Sets.Count(s => s.Type != "warmup");
             
-            if (!setsPerMuscle.TryAdd(primaryMuscle, (sets, 0)))
+            var primarySets = new MuscleGroupSets(primaryMuscle, sets, 0);
+            
+            if (!setsPerMuscle.TryAdd(primaryMuscle, primarySets))
             {
-                setsPerMuscle[primaryMuscle] = (setsPerMuscle[primaryMuscle].Item1 + sets, setsPerMuscle[primaryMuscle].Item2);
+                setsPerMuscle[primaryMuscle].PrimarySets += sets;
             }
                 
             secondaryMuscles.ForEach(secondaryMuscle =>
             {
-                if (!setsPerMuscle.TryAdd(secondaryMuscle, (0, sets)))
+                var secondarySets = new MuscleGroupSets(secondaryMuscle, 0, sets);
+                
+                if (!setsPerMuscle.TryAdd(secondaryMuscle, secondarySets))
                 {
-                    setsPerMuscle[secondaryMuscle] = (setsPerMuscle[secondaryMuscle].Item1, setsPerMuscle[secondaryMuscle].Item2 + sets);
+                    setsPerMuscle[secondaryMuscle].SecondarySets += sets;
                 }
             });
         }
