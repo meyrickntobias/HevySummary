@@ -77,5 +77,13 @@ public class HevyApiService : IWorkoutApiService
 
         return response?.Events ?? [];
     }
+
+    public async Task<List<RoutineDto>> GetRoutines()
+    {
+        // Assume 1 page of workouts
+        var response = await _httpClient.GetFromJsonAsync<RoutineResponse>($"/v1/routines?page=1&pageSize=10", _serializerOptions);
+
+        return response?.Routines ?? [];
+    }
 }
 

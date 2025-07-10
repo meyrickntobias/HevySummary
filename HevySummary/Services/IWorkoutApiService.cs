@@ -10,4 +10,6 @@ public interface IWorkoutApiService
     public Task<List<ExerciseTemplateDto>> GetExerciseTemplates(IEnumerable<string> exerciseIds);
 
     public Task<List<WorkoutEvent>> GetWorkoutEventsSince(DateTime since);
+    
+    public Task<List<RoutineDto>> GetRoutines();
 }

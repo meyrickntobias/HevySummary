@@ -16,13 +16,8 @@ public class MuscleGroupService : IMuscleGroupService
         _workoutApiService = workoutApiService;
     }
 
-    public async Task<List<ExerciseTemplateDto>> GetExerciseTemplates(IImmutableSet<string> exerciseIds, bool disableCache = false)
+    public async Task<List<ExerciseTemplateDto>> GetExerciseTemplates(IImmutableSet<string> exerciseIds)
     {
-        if (disableCache)
-        {
-            return await _workoutApiService.GetExerciseTemplates(exerciseIds);
-        }
-        
         List<ExerciseTemplateDto> exerciseTemplates = [];
 
         var cachedExerciseTemplates =
@@ -50,13 +45,8 @@ public class MuscleGroupService : IMuscleGroupService
         return exerciseTemplates;
     }
 
-    public async Task<List<WorkoutDto>> GetWorkoutsSince(DateOnly earliestWorkoutDate, bool disableCache = true)
+    public async Task<List<WorkoutDto>> GetWorkoutsSince(DateOnly earliestWorkoutDate)
     {
-        if (disableCache)
-        {
-            return await _workoutApiService.GetWorkoutsSince(earliestWorkoutDate);
-        }
-        
         var cachedWorkouts = await _cacheService.GetAllFromHashSetAsync<WorkoutDto>(Workouts);
         if (cachedWorkouts.Count == 0)
         {

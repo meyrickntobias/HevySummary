@@ -26,12 +26,11 @@ public class MuscleGroupController(
     /// sets plus secondary sets multiplied by 0.5). Also shows primary and secondary sets. Warmup sets
     /// are ignored. </returns>
     [HttpGet("/muscle-groups")]
-    public async Task<List<SetVolumeSummary>> MuscleGroupSets(int weeks = 4, bool disableCache = false)
+    public async Task<List<SetVolumeSummary>> MuscleGroupSets(int weeks = 4)
     {
-        var stopwatch = Stopwatch.StartNew();
         var dateRanges = _dateHelper.GetWeeksUpToCurrentWeek(weeks);
         var earliestWorkoutDate = dateRanges[^1].StartDate;
-        var workouts = await muscleGroupService.GetWorkoutsSince(earliestWorkoutDate, disableCache);
+        var workouts = await muscleGroupService.GetWorkoutsSince(earliestWorkoutDate);
         
         var exerciseTemplateIds = workouts
             .SelectMany(w => w.Exercises)
@@ -39,7 +38,7 @@ public class MuscleGroupController(
             .Select(e => e.ExerciseTemplateId)
             .ToImmutableHashSet();
         
-        var exerciseTemplates = await muscleGroupService.GetExerciseTemplates(exerciseTemplateIds, disableCache);
+        var exerciseTemplates = await muscleGroupService.GetExerciseTemplates(exerciseTemplateIds);
         var exerciseTemplatesDict = exerciseTemplates
             .ToDictionary(et => et.Id, et => et);
         
@@ -67,9 +66,6 @@ public class MuscleGroupController(
             weeklySetVolume.Add(muscleGroupWeek);
         }
         
-        stopwatch.Stop();
-        var formattedTime = stopwatch.Elapsed.ToString(@"ss\.fff");
-        logger.LogInformation($"Duration of request: {formattedTime} secs");
         return weeklySetVolume;
     }
 
