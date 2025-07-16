@@ -7,5 +7,5 @@ public class ExerciseTemplateDto
     public required string Type { get; set; }
     public required string PrimaryMuscleGroup  { get; set; }
     public List<string> SecondaryMuscleGroups { get; set; } = [];
-    public bool? IsCustom { get; set; }
+    // public bool? IsCustom { get; set; }
 }

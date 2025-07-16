@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using HevySummary.DTOs;
 using HevySummary.Models;
 
@@ -7,7 +8,7 @@ public interface IWorkoutApiService
 {
     public Task<List<WorkoutDto>> GetWorkoutsSince(DateOnly earliestRequestedWorkoutDate);
 
-    public Task<List<ExerciseTemplateDto>> GetExerciseTemplates(IEnumerable<string> exerciseIds);
+    public Task<ISet<ExerciseTemplateDto>> GetExerciseTemplates(IEnumerable<string> exerciseIds);
 
     public Task<List<WorkoutEvent>> GetWorkoutEventsSince(DateTime since);
     

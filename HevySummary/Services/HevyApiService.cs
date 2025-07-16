@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using System.Text.Json;
 using HevySummary.DTOs;
 using HevySummary.Models;
@@ -59,7 +60,7 @@ public class HevyApiService : IWorkoutApiService
     /// </summary>
     /// <param name="exerciseIds">The exercise templates to fetch</param>
     /// <returns>The list of exercise templates</returns>
-    public async Task<List<ExerciseTemplateDto>> GetExerciseTemplates(IEnumerable<string> exerciseIds)
+    public async Task<ISet<ExerciseTemplateDto>> GetExerciseTemplates(IEnumerable<string> exerciseIds)
     {
         var exerciseTemplates = await Task.WhenAll(exerciseIds.Select(exerciseId => 
             _httpClient.GetFromJsonAsync<ExerciseTemplateDto>($"/v1/exercise_templates/{exerciseId}", _serializerOptions)));
@@ -67,7 +68,7 @@ public class HevyApiService : IWorkoutApiService
         return exerciseTemplates
             .Where(et => et != null)
             .Select(et => et!)
-            .ToList();
+            .ToHashSet();
     }
 
     public async Task<List<WorkoutEvent>> GetWorkoutEventsSince(DateTime since)

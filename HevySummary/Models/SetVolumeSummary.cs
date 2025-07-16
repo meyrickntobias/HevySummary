@@ -5,5 +5,7 @@ public class SetVolumeSummary(DateOnly startDate, DateOnly endDate, int workouts
     public DateOnly StartDate { get; set; } = startDate;
     public DateOnly EndDate { get; set; } = endDate;
     public int Workouts { get; set; } = workouts;
-    public List<MuscleGroupSets> MuscleGroups { get; set; } = muscleGroups;
+    public List<MuscleGroupSets> MuscleGroups { get; set; } = muscleGroups.ToList();
+    
+    private Dictionary<string, MuscleGroupSets> muscleGroups { get; set; }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using HevySummary.DTOs;
 using HevySummary.Models;
+using HevySummary.Models.Collections;
 using static HevySummary.Helpers.CacheConstants;
 
 namespace HevySummary.Services;
@@ -16,12 +17,12 @@ public class MuscleGroupService : IMuscleGroupService
         _workoutApiService = workoutApiService;
     }
 
-    public async Task<List<ExerciseTemplateDto>> GetExerciseTemplates(IImmutableSet<string> exerciseIds)
+    public async Task<ISet<ExerciseTemplateDto>> GetExerciseTemplates(IImmutableSet<string> exerciseIds)
     {
-        List<ExerciseTemplateDto> exerciseTemplates = [];
+        HashSet<ExerciseTemplateDto> exerciseTemplates = [];
 
         var cachedExerciseTemplates =
-            await _cacheService.GetCacheValueAsync<List<ExerciseTemplateDto>>(ExerciseTemplates) ?? [];
+            await _cacheService.GetCacheValueAsync<ImmutableHashSet<ExerciseTemplateDto>>(ExerciseTemplates) ?? [];
         
         var cachedIds = cachedExerciseTemplates
             .Select(t => t.Id)
@@ -33,9 +34,17 @@ public class MuscleGroupService : IMuscleGroupService
             return cachedExerciseTemplates;
         }
         
-        exerciseTemplates.AddRange(cachedExerciseTemplates);
+        foreach (var cachedExerciseTemplate in cachedExerciseTemplates)
+        {
+            exerciseTemplates.Add(cachedExerciseTemplate);
+        }
+        
         var nonCachedTemplates = await _workoutApiService.GetExerciseTemplates(nonCachedIds);
-        exerciseTemplates.AddRange(nonCachedTemplates);
+        
+        foreach (var nonCachedTemplate in nonCachedTemplates)
+        {
+            exerciseTemplates.Add(nonCachedTemplate);
+        }
 
         if (nonCachedTemplates.Count != 0)
         {
@@ -45,22 +54,22 @@ public class MuscleGroupService : IMuscleGroupService
         return exerciseTemplates;
     }
 
-    public async Task<List<WorkoutDto>> GetWorkoutsSince(DateOnly earliestWorkoutDate)
+    public async Task<WorkoutCollection> GetWorkoutsSince(DateOnly earliestWorkoutDate)
     {
         var cachedWorkouts = await _cacheService.GetAllFromHashSetAsync<WorkoutDto>(Workouts);
         if (cachedWorkouts.Count == 0)
         {
-            return await RequestWorkoutsAndPushToCache(earliestWorkoutDate);
+            return new WorkoutCollection(await RequestWorkoutsAndPushToCache(earliestWorkoutDate));
         }
         
         await SyncWorkoutsCache();
         var updatedCachedWorkouts = await _cacheService.GetAllFromHashSetAsync<WorkoutDto?>(Workouts);
         
-        return updatedCachedWorkouts
+        return new WorkoutCollection(updatedCachedWorkouts
             .Where(w => w != null)
             .Select(w => w!)
             .Where(w => DateOnly.FromDateTime(w.StartTime) >= earliestWorkoutDate)
-            .ToList();
+            .ToList());
     }
 
     private async Task<List<WorkoutDto>> RequestWorkoutsAndPushToCache(DateOnly earliestWorkoutDate)
@@ -101,8 +110,8 @@ public class MuscleGroupService : IMuscleGroupService
     }
 
     private async Task UpdateExerciseTemplatesCache(
-        List<ExerciseTemplateDto> exerciseTemplatesAlreadyCached, 
-        List<ExerciseTemplateDto> exerciseTemplatesNotCached)
+        IEnumerable<ExerciseTemplateDto> exerciseTemplatesAlreadyCached, 
+        IEnumerable<ExerciseTemplateDto> exerciseTemplatesNotCached)
     {
         var allExerciseTemplates = new List<ExerciseTemplateDto>();
         allExerciseTemplates.AddRange(exerciseTemplatesNotCached);
