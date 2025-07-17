@@ -17,6 +17,26 @@ public class MuscleGroupService : IMuscleGroupService
         _workoutApiService = workoutApiService;
     }
 
+    public async Task<List<ExerciseTemplateDto>> GetAllExerciseTemplates()
+    {
+        List<ExerciseTemplateDto> exerciseTemplates;
+
+        var cachedExerciseTemplates =
+            await _cacheService.GetCacheValueAsync<List<ExerciseTemplateDto>>(AllExerciseTemplates) ?? [];
+
+        if (cachedExerciseTemplates.Count == 0)
+        {
+            exerciseTemplates = await _workoutApiService.GetAllExerciseTemplates();
+            await _cacheService.SetCacheValueAsync(AllExerciseTemplates, exerciseTemplates, TimeSpan.FromDays(1));
+        }
+        else
+        {
+            exerciseTemplates = cachedExerciseTemplates;
+        }
+        
+        return exerciseTemplates;
+    }
+
     public async Task<ISet<ExerciseTemplateDto>> GetExerciseTemplates(IImmutableSet<string> exerciseIds)
     {
         HashSet<ExerciseTemplateDto> exerciseTemplates = [];

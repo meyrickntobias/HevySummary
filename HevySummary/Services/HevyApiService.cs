@@ -70,6 +70,38 @@ public class HevyApiService : IWorkoutApiService
             .Select(et => et!)
             .ToHashSet();
     }
+    
+    /// <summary>
+    /// Fetches all exercise templates.
+    /// Runs requests in parallel to speed things up.
+    /// </summary>
+    /// <returns>The list of all exercise templates</returns>
+    public async Task<List<ExerciseTemplateDto>> GetAllExerciseTemplates()
+    {
+        var firstBatch = await _httpClient.GetFromJsonAsync<ExerciseTemplateResponseDto>("/v1/exercise_templates?page=1&pageSize=100", _serializerOptions);
+
+        if (firstBatch == null)
+        {
+            return [];
+        }
+
+        List<Task<ExerciseTemplateResponseDto?>> tasks = [];
+        for (var i = 2; i <= firstBatch.PageCount; i++)
+        {
+            var task = _httpClient.GetFromJsonAsync<ExerciseTemplateResponseDto>(
+                $"/v1/exercise_templates?page={i}&pageSize=100", _serializerOptions);
+            tasks.Add(task);
+        }
+        
+        var exerciseTemplateResponses = await Task.WhenAll(tasks);
+
+        var mergedResponse = exerciseTemplateResponses.Append(firstBatch);
+
+        var allExerciseTemplates = mergedResponse
+            .SelectMany(response => response?.ExerciseTemplates ?? []);
+
+        return allExerciseTemplates.OrderBy(et => et.Title).ToList();
+    }
 
     public async Task<List<WorkoutEvent>> GetWorkoutEventsSince(DateTime since)
     {

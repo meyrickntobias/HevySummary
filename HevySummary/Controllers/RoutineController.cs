@@ -1,5 +1,5 @@
 using System.Collections.Immutable;
-using System.Text;
+using HevySummary.Helpers;
 using HevySummary.Models;
 using HevySummary.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -48,8 +48,8 @@ public class RoutineController(
                 exercises.Add(new Exercise(
                     exerciseDto.Title, 
                     exerciseDto.Sets.Where(s => s.Type != "warmup").ToList(), 
-                    CapitalizeFirstLetterOfEachWord(primaryMuscleGroup), 
-                    secondaryMuscleGroups.Select(CapitalizeFirstLetterOfEachWord).ToList()
+                    primaryMuscleGroup.CapitalizeFirstLetterOfEachWord(), 
+                    secondaryMuscleGroups.Select(mg => mg.CapitalizeFirstLetterOfEachWord()).ToList()
                 ));
             }
             
@@ -58,21 +58,5 @@ public class RoutineController(
         }
         
         return routines;
-    }
-
-    private string CapitalizeFirstLetterOfEachWord(string input)
-    {
-        var splitWords = input.Split(" ");
-        var sb = new StringBuilder();
-        foreach (var word in splitWords)
-        {
-            sb.Append(char.ToUpperInvariant(word[0]));
-            if (word.Length == 1)
-            {
-                continue;
-            }
-            sb.Append(word[1..]);
-        }
-        return sb.ToString();
     }
 }
