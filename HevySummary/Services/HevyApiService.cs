@@ -1,6 +1,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using HevySummary.DTOs;
+using HevySummary.DTOs.Routines;
 using HevySummary.Models;
 
 namespace HevySummary.Services;
@@ -36,8 +37,8 @@ public class HevyApiService : IWorkoutApiService
         
         while (earliestFetchedWorkoutDate > earliestRequestedWorkoutDate)
         {
-            var workoutsResponse = await _httpClient.GetFromJsonAsync<WorkoutsEndpointDto>(
-                $"/v1/workouts?page={page}&pageSize=10", _serializerOptions) ?? new WorkoutsEndpointDto();
+            var workoutsResponse = await _httpClient.GetFromJsonAsync<WorkoutsResponseDto>(
+                $"/v1/workouts?page={page}&pageSize=10", _serializerOptions) ?? new WorkoutsResponseDto();
             
             if (workoutsResponse.Workouts.Count == 0)
             {
@@ -103,7 +104,7 @@ public class HevyApiService : IWorkoutApiService
         return allExerciseTemplates.OrderBy(et => et.Title).ToList();
     }
 
-    public async Task<List<WorkoutEvent>> GetWorkoutEventsSince(DateTime since)
+    public async Task<List<WorkoutEventDto>> GetWorkoutEventsSince(DateTime since)
     {
         var response = await _httpClient.GetFromJsonAsync<WorkoutEventResponse>(
             $"/v1/workouts/events?page=1&pageSize=10&since={since:yyyy-MM-dd'T'HH:mm:ss.fffffff'Z'}", _serializerOptions);

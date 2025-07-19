@@ -1,4 +1,5 @@
 using HevySummary.DTOs;
+using HevySummary.DTOs.Routines;
 using HevySummary.Models;
 
 namespace HevySummary.Services;
@@ -11,7 +12,7 @@ public interface IWorkoutApiService
     
     public Task<ISet<ExerciseTemplateDto>> GetExerciseTemplates(IEnumerable<string> exerciseIds);
 
-    public Task<List<WorkoutEvent>> GetWorkoutEventsSince(DateTime since);
+    public Task<List<WorkoutEventDto>> GetWorkoutEventsSince(DateTime since);
     
     public Task<List<RoutineDto>> GetRoutines();
 }

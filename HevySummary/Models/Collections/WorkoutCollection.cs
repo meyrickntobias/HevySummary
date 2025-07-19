@@ -21,12 +21,6 @@ public class WorkoutCollection(List<WorkoutDto> workouts)
         return workoutGroups;
     }
 
-    // public DateRangeIndexedExerciseCollection GroupExercisesIntoDateRanges(List<DateRange> dateRanges)
-    // {
-    //     var workouts = SplitIntoDateRanges(dateRanges);
-    //     workouts.SelectMany()
-    // }
-
     public IImmutableSet<string> GetDistinctExerciseTemplateIds()
     {
         return Workouts.SelectMany(w => w.Exercises)

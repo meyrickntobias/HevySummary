@@ -1,4 +1,4 @@
-namespace HevySummary.DTOs;
+namespace HevySummary.DTOs.Routines;
 
 public class RoutineDto(
     string title, 

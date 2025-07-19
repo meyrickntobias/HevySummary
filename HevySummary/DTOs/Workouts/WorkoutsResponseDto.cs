@@ -1,6 +1,6 @@
 namespace HevySummary.DTOs;
 
-public class WorkoutsEndpointDto
+public class WorkoutsResponseDto
 {
     public int Page { get; set; }
     

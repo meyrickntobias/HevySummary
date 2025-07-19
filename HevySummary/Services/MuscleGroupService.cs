@@ -119,10 +119,10 @@ public class MuscleGroupService : IMuscleGroupService
         {
             switch (workoutEvent)
             {
-                case WorkoutUpdatedEvent updatedEvent:
+                case WorkoutUpdatedEventDto updatedEvent:
                     await _cacheService.AddToHashSetAsync("Workouts", updatedEvent.Workout.Id.ToString(), updatedEvent.Workout);
                     break;
-                case WorkoutDeletedEvent deletedEvent:
+                case WorkoutDeletedEventDto deletedEvent:
                     await _cacheService.RemoveFromHashSetAsync("Workouts", deletedEvent.WorkoutId.ToString());
                     break;
             }

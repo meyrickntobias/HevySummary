@@ -10,5 +10,5 @@ public class WorkoutEventResponse
     public int PageCount { get; set; }
 
     [JsonConverter(typeof(WorkoutEventsJsonConverter))]
-    public List<WorkoutEvent> Events { get; set; } = [];
+    public List<WorkoutEventDto> Events { get; set; } = [];
 }

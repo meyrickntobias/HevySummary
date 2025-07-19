@@ -1,3 +1,5 @@
+using HevySummary.DTOs.Routines;
+
 namespace HevySummary.DTOs;
 
 public class RoutineResponse(int page, int pageCount, List<RoutineDto> routines)

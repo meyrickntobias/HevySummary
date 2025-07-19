@@ -5,16 +5,16 @@ using HevySummary.Models;
 
 namespace HevySummary.Helpers;
 
-public class WorkoutEventsJsonConverter : JsonConverter<List<WorkoutEvent?>>
+public class WorkoutEventsJsonConverter : JsonConverter<List<WorkoutEventDto?>>
 {
-    public override List<WorkoutEvent?> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override List<WorkoutEventDto?> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         if (reader.TokenType != JsonTokenType.StartArray)
         {
             throw new JsonException();
         }
 
-        List<WorkoutEvent?> workoutEvents = [];
+        List<WorkoutEventDto?> workoutEvents = [];
         
         while (reader.Read())
         {
@@ -56,7 +56,7 @@ public class WorkoutEventsJsonConverter : JsonConverter<List<WorkoutEvent?>>
                         throw new JsonException();
                     }
                 
-                    workoutEvents.Add(new WorkoutUpdatedEvent(workout)
+                    workoutEvents.Add(new WorkoutUpdatedEventDto(workout)
                     {
                         Type = "updated"
                     });
@@ -79,7 +79,7 @@ public class WorkoutEventsJsonConverter : JsonConverter<List<WorkoutEvent?>>
                     reader.Read();
                     var deletedAtDate = reader.GetDateTime();
 
-                    workoutEvents.Add(new WorkoutDeletedEvent(id, deletedAtDate)
+                    workoutEvents.Add(new WorkoutDeletedEventDto(id, deletedAtDate)
                     {
                         Type = "deleted"
                     });
@@ -98,7 +98,7 @@ public class WorkoutEventsJsonConverter : JsonConverter<List<WorkoutEvent?>>
         return workoutEvents;
     }
 
-    public override void Write(Utf8JsonWriter writer, List<WorkoutEvent?> value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, List<WorkoutEventDto?> value, JsonSerializerOptions options)
     {
         throw new NotImplementedException();
     }
