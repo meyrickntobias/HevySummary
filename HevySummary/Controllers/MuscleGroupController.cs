@@ -13,7 +13,7 @@ public class MuscleGroupController(
     TimeProvider timeProvider)
 {
     private readonly DateHelper _dateHelper = new(timeProvider);
-    
+
     /// <summary>
     /// Gets a summary of the sets performed for each muscle group over the last N weeks.
     /// </summary>
@@ -27,15 +27,15 @@ public class MuscleGroupController(
         var dateRanges = _dateHelper.GetWeeksUpToCurrentWeek(weeks);
         var earliestWorkoutDate = dateRanges[^1].StartDate;
         var workouts = await muscleGroupService.GetWorkoutsSince(earliestWorkoutDate);
-        
+
         var exerciseTemplateIds = workouts.GetDistinctExerciseTemplateIds();
         var exerciseTemplates = await muscleGroupService.GetExerciseTemplates(exerciseTemplateIds);
-        
+
         var workoutsInWeeks = workouts.SplitIntoDateRanges(dateRanges);
         var exercisesInWeeks = new DateRangeIndexedExerciseCollection(workoutsInWeeks, exerciseTemplates);
-        
+
         var weeklySetVolume = exercisesInWeeks.CalculateSetVolumes(workoutsInWeeks);
-        
+
         return weeklySetVolume;
     }
 }
